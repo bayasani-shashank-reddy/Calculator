@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Calculator</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #f1f1f1;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .calculator {
+      background: #fff;
+      border-radius: 20px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+      padding: 30px;
+      width: 420px;
+    }
+
+    #result {
+      width: 100%;
+      font-size: 48px;
+      padding: 15px;
+      text-align: right;
+      border: none;
+      background: none;
+      outline: none;
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+    }
+
+    button {
+      padding: 18px;
+      font-size: 20px;
+      border: none;
+      border-radius: 12px;
+      background-color: #f9f9f9;
+      color: #ff7b00;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+      user-select: none;
+    }
+
+    button:hover {
+      background-color: #ffe3c2;
+    }
+
+    .operator {
+      color: #ff7b00;
+    }
+
+    .equal {
+      grid-column: span 5; /* Make the equal button span all columns */
+      background-color: #ff7b00;
+      color: #fff;
+      font-size: 24px; /* Increase font size */
+      padding: 20px; /* Increase padding for a larger button */
+      border-radius: 12px; /* Keep the same border radius */
+    }
+
+    .footer {
+      margin-top: 15px;
+      font-size: 14px;
+      text-align: center;
+      color: #777;
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="calculator">
+    <h1>Calculator</h1>
+    <input type="text" id="result" value="0" disabled />
+    <div class="buttons">
+      <button onclick="clearResult()">C</button>
+      <button onclick="backspace()">⌫</button>
+      <button onclick="appendToResult('(')">(</button>
+      <button onclick="appendToResult(')')">)</button>
+      <button class="operator" onclick="appendToResult('%')">%</button>
+
+      <button onclick="appendToResult('7')">7</button>
+      <button onclick="appendToResult('8')">8</button>
+      <button onclick="appendToResult('9')">9</button>
+      <button class="operator" onclick="appendToResult('/')">÷</button>
+      <button class="operator" onclick="appendToResult('^')">^</button> <!-- power button -->
+
+      <button onclick="appendToResult('4')">4</button>
+      <button onclick="appendToResult('5')">5</button>
+      <button onclick="appendToResult('6')">6</button>
+      <button class="operator" onclick="appendToResult('*')">×</button>
+      <button class="operator" onclick="appendToResult('Math.sqrt(')">√</button>
+
+      <button onclick="appendToResult('1')">1</button>
+      <button onclick="appendToResult('2')">2</button>
+      <button onclick="appendToResult('3')">3</button>
+      <button class="operator" onclick="appendToResult('-')">−</button>
+      <button class="operator" onclick="appendToResult('+')">+</button>
+
+      <button onclick="appendToResult('0')">0</button>
+      <button onclick="appendToResult('.')">.</button>
+      <button class="operator" onclick="appendToResult('sin(')">sin</button>
+      <button class="operator" onclick="appendToResult('cos(')">cos</button>
+      <button class="operator" onclick="appendToResult('tan(')">tan</button>
+
+      <button class="operator" onclick="appendToResult('Math.log10(')">log</button>
+      <button class="operator" onclick="appendToResult('Math.log(')">ln</button>
+      <button class="operator" onclick="appendToResult('Math.exp(')">exp</button>
+      <button class="operator" onclick="calculateSquare()">x²</button> <!-- square button added -->
+      <button class="operator" onclick="calculateFactorial()">x!</button>
+
+      <button class="equal" onclick="calculateResult()">=</button>
+    </div>
+    <div class="footer">
+      <h2>Done by Bayasani Shashank Reddy</h2>
+    </div>
+  </div>
+
+  <script>
+    function appendToResult(value) {
+      const display = document.getElementById('result');
+      if (display.value === "0" || display.value === "Error" || display.value === "Overflow") {
+        display.value = value;
+      } else {
+        display.value += value;
+      }
+    }
+
+    function clearResult() {
+      document.getElementById('result').value = "0";
+    }
+
+    function backspace() {
+      const display = document.getElementById('result');
+      display.value = display.value.slice(0, -1) || "0";
+    }
+
+    // Helper function to replace ^ with Math.pow calls
+    function replacePowerOperators(expr) {
+      while (expr.indexOf('^') !== -1) {
+        expr = expr.replace(/(\([^()]*\)|[^\^()\s\+\-\*\/\%\d\.]+|\d*\.?\d+)\^(\([^()]*\)|[^\^()\s\+\-\*\/\%\d\.]+|\d*\.?\d+)/, 'Math.pow($1,$2)');
+      }
+      return expr;
+    }
+
+    function calculateResult() {
+      const display = document.getElementById('result');
+      try {
+        let expression = display.value;
+
+        // Replace sin(x) with Math.sin(x * Math.PI / 180) to convert degrees to radians
+        expression = expression.replace(/sin\(([^)]+)\)/g, function(match, p1) {
+          return `Math.sin((${p1}) * Math.PI / 180)`;
+        });
+        expression = expression.replace(/cos\(([^)]+)\)/g, function(match, p1) {
+          return `Math.cos((${p1}) * Math.PI / 180)`;
+        });
+        expression = expression.replace(/tan\(([^)]+)\)/g, function(match, p1) {
+          return `Math.tan((${p1}) * Math.PI / 180)`;
+        });
+
+        // Replace all ^ with Math.pow calls
+        expression = replacePowerOperators(expression);
+
+        // Evaluate expression safely
+        display.value = Function('"use strict";return (' + expression + ')')();
+      } catch {
+        display.value = "Error";
+      }
+    }
+
+    function calculateFactorial() {
+      const display = document.getElementById('result');
+      const n = parseInt(display.value);
+      if (isNaN(n) || n < 0) {
+        display.value = "Error";
+        return;
+      }
+      let fact = 1;
+      for (let i = 2; i <= n; i++) {
+        fact *= i;
+        if (!isFinite(fact)) {
+          display.value = "Overflow";
+          return;
+        }
+      }
+      display.value = fact;
+    }
+
+    function calculateSquare() {
+      const display = document.getElementById('result');
+      try {
+        let val = display.value;
+        // Evaluate the current expression first
+        val = Function('"use strict";return (' + val + ')')();
+        const squared = val * val;
+        if (!isFinite(squared)) {
+          display.value = "Overflow";
+          return;
+        }
+        display.value = squared;
+      } catch {
+        display.value = "Error";
+      }
+    }
+  </script>
+</body>
+</html>
+
